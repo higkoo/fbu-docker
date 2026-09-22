@@ -1,7 +1,7 @@
 """fast-browser-use 常驻 HTTP 服务：模型加载一次，通过 HTTP 提供浏览任务执行。
 
 启动（由 fbu-serve.sh 封装）:
-    uvicorn server:app --host 127.0.0.1 --port 8768
+    uvicorn server:app --host 0.0.0.0 --port 8768
 
 接口:
     GET  /health -> {"model_ready": bool, "busy": bool, "pending": int}

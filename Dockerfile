@@ -6,6 +6,8 @@ FROM ${BASE_IMAGE}
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    TZ=Asia/Shanghai \
     VENV=/opt/fbu-venv \
     PLAYWRIGHT_BROWSERS_PATH=/opt/fbu/ms-playwright \
     PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-arm64 \
@@ -40,6 +42,9 @@ RUN pip install --no-cache-dir \
 
 # Playwright 对 Debian ARM64 无官方支持，伪装 ubuntu24.04-arm64 下载 headless shell
 RUN python -m playwright install chromium-headless-shell
+
+# 系统时区落到 /etc/localtime 与 /etc/timezone，date/日志时间戳一并使用北京时间
+RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo "${TZ}" > /etc/timezone
 
 WORKDIR /app
 COPY server.py entrypoint.sh /app/

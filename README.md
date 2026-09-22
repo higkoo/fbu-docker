@@ -10,6 +10,8 @@ docker build -t fbu:latest .
 podman build -t fbu:latest .
 ```
 
+> 下文所有命令中的 `docker` 均可用 `podman` 等价替换，参数完全一致。
+
 镜像内容：Debian 13 + Python venv（torch CPU / transformers / playwright / modelscope / fastapi）+ Chromium headless shell，约 1.5 GB，不含模型权重。
 
 国内网络已内置换源加速，无需额外配置：
@@ -17,6 +19,7 @@ podman build -t fbu:latest .
 - apt 源 → 阿里云 `mirrors.aliyun.com`
 - pip 源 → 阿里云 `mirrors.aliyun.com/pypi/simple/`
 - HuggingFace → `hf-mirror.com` 镜像
+- 模型权重 → ModelScope（国内直连，无需镜像）
 
 ## 运行
 
@@ -46,7 +49,7 @@ curl -s http://127.0.0.1:8768/run -H 'Content-Type: application/json' \
   -d '{"url":"https://cn.bing.com/search?q=higkoo","goal":"报告第一条搜索结果的标题。","expect_text":["higkoo"]}'
 ```
 
-服务监听 `0.0.0.0:8768`，端口用 `-p` 映射或环境变量 `FBU_PORT` 修改。接口：
+服务监听 `0.0.0.0:8768`（容器内所有网卡，便于端口映射与远程调用），端口用 `-p` 映射或环境变量 `FBU_PORT` 修改。接口：
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
@@ -80,6 +83,7 @@ docker run --rm -v /path/to/fbu-data:/data fbu:latest run ...
 | `FBU_PORT` | `8768` | 常驻服务端口 |
 | `FBU_HEADLESS` | `1` | 设为 `0` 显示浏览器窗口（需桌面环境） |
 | `FBU_LOCALE` | `en-US` | 浏览器语言 |
+| `TZ` | `Asia/Shanghai` | 容器时区（默认北京时间，日志时间戳同步） |
 
 ## 文件说明
 

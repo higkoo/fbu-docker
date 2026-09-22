@@ -1,0 +1,15 @@
+.git
+.gitignore
+*.md
+artifacts/
+debs/
+download.log
+serve.log
+serve.pid
+env/
+models/
+ms-playwright/
+.modelscope-cache/
+.pip-cache/
+hf/
+fast-browser-use/

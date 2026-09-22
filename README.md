@@ -18,8 +18,7 @@ podman build -t fbu:latest .
 - 基础镜像经 DaoCloud 加速拉取（`--build-arg BASE_IMAGE=debian:13` 可切回官方源）
 - apt 源 → 阿里云 `mirrors.aliyun.com`
 - pip 源 → 阿里云 `mirrors.aliyun.com/pypi/simple/`
-- HuggingFace → `hf-mirror.com` 镜像
-- 模型权重 → ModelScope（国内直连，无需镜像）
+- 模型权重 → ModelScope（国内直连，全程不依赖 HuggingFace）
 
 ## 运行
 
@@ -96,4 +95,4 @@ docker run --rm -v /path/to/fbu-data:/data fbu:latest run ...
 ## 已知适配说明
 
 - Playwright 官方不支持 Debian ARM64 的 chromium 分发，镜像内通过 `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-arm64` 下载 headless shell，系统库由 apt 直接安装，已在 Debian 13 上实测可用。
-- 模型从 ModelScope 镜像下载（国内网络友好）；HuggingFace 直连不可用时无需额外配置。
+- 模型权重统一从 ModelScope 下载（国内直连，无需任何镜像站），镜像内不依赖 HuggingFace。

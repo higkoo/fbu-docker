@@ -89,6 +89,7 @@ docker run --rm -v /path/to/fbu-data:/data fbu:latest run ...
 | 文件 | 用途 |
 |---|---|
 | `Dockerfile` | 镜像构建（Debian 13） |
+| `constraints.txt` | pip 约束：钉住 torch 2.12 纯 CPU 版，防止传递依赖升级拉入 CUDA |
 | `entrypoint.sh` | 入口：按需下载模型，转发 `run`/`serve` 命令 |
 | `server.py` | 常驻 HTTP 服务（FastAPI） |
 

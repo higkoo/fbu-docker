@@ -13,7 +13,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-arm64 \
     FBU_TRACE_DIR=/data/artifacts \
     PIP_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/ \
-    MODELSCOPE_CACHE=/data/.modelscope-cache
+    MODELSCOPE_CACHE=/data/.modelscope-cache \
+    HF_HUB_OFFLINE=1
 
 # apt 源切换为阿里云镜像（兼容新版/旧版 sources 文件格式）
 RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g; s|security.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list.d/debian.sources 2>/dev/null \
@@ -31,15 +32,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN python3 -m venv "$VENV"
 ENV PATH="$VENV/bin:$PATH"
 
+# 依赖约束文件需先于 pip 步骤复制（ torch 版本钉死见文件内注释）
+COPY constraints.txt /root/constraints.txt
+
 # PyTorch CPU 后端依赖（aarch64 的 PyPI wheel 即 CPU 版）+ ModelScope 下载工具 + 常驻服务
 # 模型权重统一从 ModelScope（国内直连）下载，不依赖 HuggingFace
-# torch 固定 2.12：aarch64 wheel 为纯 CPU 构建（2.13+ 会连带拉取约 3GB 的 CUDA 依赖）
-RUN pip install --no-cache-dir \
-      "torch==2.12.*" "transformers>=5.17,<6" "accelerate>=1.10,<2" \
-      "playwright>=1.58,<2" \
-      "modelscope>=1.30,<2" fastapi uvicorn \
- && pip install --no-cache-dir \
-      "fast-browser-use[torch] @ git+https://github.com/APUS-AI-Lab/fast-browser-use.git"
+# torch 通过 constraints.txt 钉在 2.12：aarch64 wheel 为纯 CPU 构建
+# （2.13+ 会连带拉取约 3GB 的 CUDA 依赖），防止上游依赖范围放行升级
+RUN pip install --no-cache-dir -c /root/constraints.txt \
+      "transformers>=5.17,<6" "accelerate>=1.10,<2" \
+      "playwright>=1.58,<2" fastapi uvicorn \
+ && pip install --no-cache-dir -c /root/constraints.txt \
+      "fast-browser-use[torch,modelscope] @ git+https://github.com/APUS-AI-Lab/fast-browser-use.git"
 
 # Playwright 对 Debian ARM64 无官方支持，伪装 ubuntu24.04-arm64 下载 headless shell
 RUN python -m playwright install chromium-headless-shell
